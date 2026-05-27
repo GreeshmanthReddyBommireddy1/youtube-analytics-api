@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+
+  youtube-api:
+    build: .
+
+    container_name: youtube_api
+
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - .env
+
+    networks:
+      - youtube-network
+
+networks:
+  youtube-network:
+    external: true

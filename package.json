@@ -1,0 +1,16 @@
+{
+  "name": "youtube-analytics-api",
+  "version": "1.0.0",
+  "description": "YouTube Analytics Backend API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.11.5"
+  }
+}
