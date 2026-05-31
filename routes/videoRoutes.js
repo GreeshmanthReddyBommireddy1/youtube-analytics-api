@@ -2,6 +2,8 @@ const express = require('express');
 
 const verifyToken = require('../middleware/authMiddleware');
 
+const authorizeRole = require('../middleware/roleMiddleware');
+
 const router = express.Router();
 
 const {
@@ -12,14 +14,40 @@ const {
   deleteVideo
 } = require('../controllers/videoController');
 
-router.get('/', verifyToken, getAllVideos);
 
-router.get('/:id', verifyToken, getVideoById);
+router.get(
+    '/',
+    verifyToken,
+    authorizeRole('admin', 'creator', 'viewer'),
+    getAllVideos
+);
 
-router.post('/', verifyToken, createVideo);
+router.get(
+    '/:id',
+    verifyToken,
+    authorizeRole('admin', 'creator', 'viewer'),
+    getVideoById
+);
 
-router.put('/:id', verifyToken, updateVideo);
+router.post(
+    '/',
+    verifyToken,
+    authorizeRole('admin', 'creator'),
+    createVideo
+);
 
-router.delete('/:id', verifyToken, deleteVideo);
+router.put(
+    '/:id',
+    verifyToken,
+    authorizeRole('admin', 'creator'),
+    updateVideo
+);
+
+router.delete(
+    '/:id',
+    verifyToken,
+    authorizeRole('admin'),
+    deleteVideo
+);
 
 module.exports = router;

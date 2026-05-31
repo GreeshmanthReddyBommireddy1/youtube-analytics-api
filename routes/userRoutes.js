@@ -2,6 +2,8 @@ const express = require('express');
 
 const verifyToken = require('../middleware/authMiddleware');
 
+const authorizeRole = require('../middleware/roleMiddleware');
+
 const router = express.Router();
 
 const {
@@ -12,14 +14,41 @@ const {
   deleteUser
 } = require('../controllers/userController');
 
-router.get('/', verifyToken, getAllUsers);
 
-router.get('/:id',verifyToken, getUserById);
 
-router.post('/', verifyToken, createUser);
+router.get(
+    '/',
+    verifyToken,
+    authorizeRole('admin'),
+    getAllUsers
+);
 
-router.put('/:id', verifyToken, updateUser);
+router.get(
+    '/:id',
+    verifyToken,
+    authorizeRole('admin'),
+    getUserById
+);
 
-router.delete('/:id', verifyToken, deleteUser);
+router.post(
+    '/',
+    verifyToken,
+    authorizeRole('admin'),
+    createUser
+);
+
+router.put(
+    '/:id',
+    verifyToken,
+    authorizeRole('admin'),
+    updateUser
+);
+
+router.delete(
+    '/:id',
+    verifyToken,
+    authorizeRole('admin'),
+    deleteUser
+);
 
 module.exports = router;
