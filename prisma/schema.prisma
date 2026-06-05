@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  user_id       Int            @id @default(autoincrement()) @map("user_id")
+  username      String         @unique @db.VarChar(50)
+  email         String         @unique @db.VarChar(255)
+  full_name     String         @db.VarChar(100)
+  country_code  String         @db.Char(2)
+  joined_at     DateTime       @default(now()) @db.Timestamp(6)
+  is_active     Boolean        @default(true)
+  channels      Channel[]
+  comments      Comment[]
+  subscriptions Subscription[]
+
+  @@map("users")
+}
+
+model AppUser {
+  id                  Int                  @id @default(autoincrement())
+  username            String               @unique @db.VarChar(100)
+  password            String
+  created_at          DateTime?            @default(now()) @db.Timestamp(6)
+  passwordResetTokens PasswordResetToken[]
+  userRoles           UserRole[]
+
+  @@map("app_users")
+}
+
+model Role {
+  role_id   Int        @id @default(autoincrement()) @map("role_id")
+  role_name String     @unique @db.VarChar(50)
+  userRoles UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  user_role_id Int     @id @default(autoincrement()) @map("user_role_id")
+  user_id      Int     @map("user_id")
+  role_id      Int     @map("role_id")
+  role         Role    @relation(fields: [role_id], references: [role_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user_roles_role")
+  user         AppUser @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user_roles_user")
+
+  @@map("user_roles")
+}
+
+model Channel {
+  channel_id    Int            @id @default(autoincrement()) @map("channel_id")
+  user_id       Int            @map("user_id")
+  channel_name  String         @unique @db.VarChar(100)
+  description   String?
+  created_at    DateTime       @default(now()) @db.Timestamp(6)
+  is_verified   Boolean        @default(false)
+  user          User           @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "fk_channels_user")
+  subscriptions Subscription[]
+  videos        Video[]
+
+  @@map("channels")
+}
+
+model PasswordResetToken {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  token      String   @unique @db.VarChar(255)
+  expires_at DateTime @db.Timestamp(6)
+  user       AppUser  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_reset_user")
+
+  @@map("password_reset_tokens")
+}
+
+model Genre {
+  genre_id    Int     @id @default(autoincrement()) @map("genre_id")
+  genre_name  String  @unique @db.VarChar(50)
+  description String? @db.VarChar(255)
+  videos      Video[]
+
+  @@map("genres")
+}
+
+model Video {
+  video_id         Int       @id @default(autoincrement()) @map("video_id")
+  channel_id       Int       @map("channel_id")
+  genre_id         Int       @map("genre_id")
+  title            String    @db.VarChar(200)
+  description      String?
+  upload_date      DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  duration_seconds Int       @default(0)
+  view_count       Int    @default(0)
+  like_count       Int       @default(0)
+  dislike_count    Int       @default(0)
+  is_public        Boolean   @default(true)
+  comments         Comment[]
+  channel          Channel   @relation(fields: [channel_id], references: [channel_id], onDelete: Cascade, map: "fk_videos_channel")
+  genre            Genre     @relation(fields: [genre_id], references: [genre_id], map: "fk_videos_genre")
+
+  @@map("videos")
+}
+
+model Subscription {
+  subscription_id Int      @id @default(autoincrement()) @map("subscription_id")
+  user_id         Int      @map("user_id")
+  channel_id      Int      @map("channel_id")
+  subscribed_at   DateTime @default(now()) @db.Timestamp(6)
+  notification_on Boolean  @default(true)
+  channel         Channel  @relation(fields: [channel_id], references: [channel_id], onDelete: Cascade, map: "fk_subscriptions_channel")
+  user            User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "fk_subscriptions_user")
+
+  @@unique([user_id, channel_id], name: "uq_subscriptions_user_channel", map: "uq_subscriptions_user_channel")
+  @@map("subscriptions")
+}
+
+model Comment {
+  comment_id   Int      @id @default(autoincrement()) @map("comment_id")
+  video_id     Int      @map("video_id")
+  user_id      Int      @map("user_id")
+  comment_text String
+  commented_at DateTime @default(now()) @db.Timestamp(6)
+  like_count   Int      @default(0)
+  user         User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "fk_comments_user")
+  video        Video    @relation(fields: [video_id], references: [video_id], onDelete: Cascade, map: "fk_comments_video")
+
+  @@map("comments")
+}
